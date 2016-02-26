@@ -3,11 +3,13 @@
 
 #include <iostream>
 #include <ostream>
+#include <cmath>
 
 using namespace std; 
 
 class particle; 
 class simulation; 
+class Node;
 
 class vec3D
 {
@@ -111,7 +113,8 @@ public:
 		}
 
 		friend class particle; 
-		friend class simulation; 
+		friend class simulation;
+		friend class Node; 
 };
 
 void vec3D::operator=(const vec3D & nV)
