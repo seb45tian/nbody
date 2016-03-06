@@ -40,7 +40,7 @@
 // this constructor uses a file to load the particles
 //simulation nbody("128.tab"); 
 // this constructor creates random particles
-simulation nbody(10);
+simulation nbody(1024);
 
 
 // global variables for the visualisation 
@@ -127,7 +127,7 @@ void draw()
         nbody.updatesCounter = 0;
     }
     // Output for the console
-	//std::cout << "UPS: "<< ups <<'\r' << std::flush;
+	std::cout << "UPS: "<< ups <<'\r' << std::flush;
 	// Output for the display window
 	std::string out = "Updates per second: " + std::to_string(ups);
 	output(0,100, 0,198,247, GLUT_BITMAP_HELVETICA_18, out);

@@ -53,7 +53,7 @@ public:
 	void randParticles()
 	{
 		// A REALLY HEAVY PARTICLE IN THE MIDDLE
-		Ps[0].set(vec3D(0,0,0), vec3D(0,0,0),1e10);
+		Ps[0].set(vec3D(0,0,0), vec3D(0,0,0),1e8);
 
 		for (int i = 1; i < size; i++)
 		{
@@ -74,11 +74,11 @@ public:
 			vz /= 10000.0f;
 
 			// UNCOMMENT IF YOU WANT TO START WITH ZERO VELOCITY
-			// vx = 0;
-			// vy = 0;
-			// vz = 0;
+			vx = 0;
+			vy = 0;
+			vz = 0;
 
-			Ps[i].set(vec3D(x,y,z), vec3D(vx,vy,vz),1); 
+			Ps[i].set(vec3D(x,y,z), vec3D(vx,vy,vz),1e8); 
 		}
 	}
 
@@ -108,9 +108,8 @@ public:
 
 	void update()
 	{
-		//update(0,size);
-		BarnesHut(0,size);
-		//cout << Ps[5].getVel() << '\r'<< flush;
+	    update(0,size);
+		//BarnesHut(0,size);
 	}
 
 
@@ -128,7 +127,7 @@ public:
 			#endif 
 		}
 		calculateForce(start, end);
-		// BarnesHut(start, end);
+		//BarnesHut(start, end);
 	}
 
 
@@ -172,7 +171,7 @@ public:
 		const double G = 6.6470831e-11;
 		vec3D acc(0,0,0);
 		vec3D newvel(0,0,0);
-		for (unsigned int i = start+1; i < end; i++)
+		for (unsigned int i = start; i < end; i++)
 		{
 			vec3D sumj(0,0,0);
 			vec3D posi = Ps[i].getPos();
@@ -201,29 +200,30 @@ public:
 	{
 		double newlength = boundary.x*2;
 		Node root = Node(vec3D(0),newlength);
-    	BHTree tree = BHTree(root);
+		BHTree tree = BHTree(root);
 
-        // Add bodies to the tree
-        for (unsigned int i = start; i < end; i++)
-        {
-            if (Ps[i].inNode(root)) tree.addParticle(Ps[i]);
-        }
-        tree.traverse(&tree);
-        
-        //Now, use the methods in BHTree to update the velocities,
-        //traveling recursively through the tree
-        for (unsigned int i = start+1; i < end; i++)
-        {
-            // Ps[i].resetForce(); // not necessary if we calc new velocity
-            if (Ps[i].inNode(root))
-            {
-              tree.updateVelocity(Ps[i]); // HAS TO BE SOMETHING LIKE CALCULATE NEW VELOCITY!
-
-              // //Calculate the new positions on a time step
-              Ps[i].update(boundary);
-            }
-        }
- 	}
+		// Add bodies to the tree
+		for (unsigned int i = start; i < end; i++)
+		{
+			if (Ps[i].inNode(root)) tree.addParticle(Ps[i]);
+		}
+		//tree.traverse(&tree);
+		
+		//Now, use the methods in BHTree to update the velocities,
+		//traveling recursively through the tree
+		for (unsigned int i = start; i < end; i++)
+		{
+			// Ps[i].resetForce(); // not necessary if we calc new velocity
+			// if (Ps[i].inNode(root))
+			// {
+				// cout << "Particle i: " << i << endl;
+				tree.updateVelocity(Ps[i]); // HAS TO BE SOMETHING LIKE CALCULATE NEW VELOCITY!
+				// cout << " vel: " << Ps[i].getVel() << endl;
+				// //Calculate the new positions on a time step
+				Ps[i].update(boundary);
+			// }
+		}
+	}
 	
 };
 

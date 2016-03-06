@@ -227,7 +227,7 @@ public:
 	//Start at the main node of the tree. Then, recursively go to each branch
 	//until either we reach an external node or we reach a node that is sufficiently
 	//far away that the external nodes would not matter much.
-	void updateVelocity(particle np)
+	void updateVelocity(particle &np)
 	{
 		double theta = 2;
 		vec3D diff = p.getPos() - np.getPos();
@@ -235,22 +235,31 @@ public:
 
 		if (this->isExternal(*this) == true)
 		{
-			if (!(p==np)) {np.calcNewVelocity(p);}
+			// cout << "External Node" << endl;
+			if (!(p==np))
+			{
+				// cout << "Old: " << np.getVel() << endl;
+				np.addVelocity(p);
+				// cout << "New: " << np.getVel() << endl;
+				return;
+			}
+			// else cout << "np == p" << endl;
 		}
 		else if (octant.get_length()/(distance)< theta)
 		{
-			np.calcNewVelocity(p);
+			// cout << "l/r < theta" << endl;
+			np.addVelocity(p);
 		}
 		else
 		{
-			if (SWU!=NULL) SWU->updateVelocity(np);
-			if (NWU!=NULL) NWU->updateVelocity(np);
-			if (SEU!=NULL) SEU->updateVelocity(np);
-			if (NEU!=NULL) NEU->updateVelocity(np);
-			if (SWD!=NULL) SWD->updateVelocity(np);
-			if (NWD!=NULL) NWD->updateVelocity(np);
-			if (SED!=NULL) SED->updateVelocity(np);
-			if (NED!=NULL) NED->updateVelocity(np);
+			if (this->SWU!=NULL) {this->SWU->updateVelocity(np);}
+			if (this->NWU!=NULL) {this->NWU->updateVelocity(np);}
+			if (this->SEU!=NULL) {this->SEU->updateVelocity(np);}
+			if (this->NEU!=NULL) {this->NEU->updateVelocity(np);}
+			if (this->SWD!=NULL) {this->SWD->updateVelocity(np);}
+			if (this->NWD!=NULL) {this->NWD->updateVelocity(np);}
+			if (this->SED!=NULL) {this->SED->updateVelocity(np);}
+			if (this->NED!=NULL) {this->NED->updateVelocity(np);}
 		}
 	}
 

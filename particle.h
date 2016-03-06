@@ -64,7 +64,7 @@ public:
 
     friend bool operator == (const particle &p1, const particle &p2)
     {
-    	if (p1.mass == p2.mass && p1.pos == p2.pos && p1.vel == p2.vel)
+    	if (p1.pos == p2.pos)
     	{
     		return true;
     	}
@@ -91,16 +91,16 @@ public:
 	}
 
 
-	void calcNewVelocity(particle &a)
+	void addVelocity(particle &a)
 	{
 		const double G = 6.6470831e-11;
 		vec3D acc(0,0,0);
-		vec3D diff  = pos - a.pos;
+		vec3D diff  = a.pos - pos;
 		vec3D nom   = diff*a.mass;
-		double mag   = diff.magnitude();
-		double denom = (mag*mag*mag);
+		double dist = diff.magnitude();
+		double denom =  (dist*dist*dist);
 		acc = (nom/denom)*G;
-		vel += acc;
+		vel = vel + acc;
 	}
 
 
