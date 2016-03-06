@@ -1,4 +1,4 @@
-CC=g++
+CC=g++  #-std=c++0x
 CFLAGS=-c -Wno-deprecated -O3
 LDFLAGS=-framework GLUT -framework OpenGL -lboost_system
 SOURCES=GL.cpp

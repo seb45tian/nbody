@@ -9,6 +9,8 @@
 #include <boost/thread/thread.hpp>
 #include <boost/bind.hpp>
 
+#define G 6.6470831e-11
+
 class simulation 
 {
 	vec3D boundary;
@@ -53,9 +55,9 @@ public:
 	void randParticles()
 	{
 		// A REALLY HEAVY PARTICLE IN THE MIDDLE
-		Ps[0].set(vec3D(0,0,0), vec3D(0,0,0),1e8);
+		// Ps[0].set(vec3D(0,0,0), vec3D(0,0,0),1e8);
 
-		for (int i = 1; i < size; i++)
+		for (int i = 0; i < size; i++)
 		{
 			double x, y, z;
 			// the following is not nice but I was feeling lazy
@@ -73,12 +75,12 @@ public:
 			vy /= 10000.0f;
 			vz /= 10000.0f;
 
-			// UNCOMMENT IF YOU WANT TO START WITH ZERO VELOCITY
-			vx = 0;
-			vy = 0;
-			vz = 0;
+			// UNCOMMENT IF YOU WANT TO START WITH ZERO VELOCITY / MIGHT CAUSE ERROR FOR LARGE N??
+			// vx = 0;
+			// vy = 0;
+			// vz = 0;
 
-			Ps[i].set(vec3D(x,y,z), vec3D(vx,vy,vz),1e8); 
+			Ps[i].set(vec3D(x,y,z), vec3D(vx,vy,vz),100000000.0f); 
 		}
 	}
 
@@ -126,8 +128,8 @@ public:
 			Ps[i].update();
 			#endif 
 		}
-		calculateForce(start, end);
-		//BarnesHut(start, end);
+		//calculateForce(start, end);
+		BarnesHut(start, end);
 	}
 
 
@@ -168,29 +170,20 @@ public:
 	void calculateForce(const unsigned int start, const unsigned int end)
 	{
 		// calcuate forces here
-		const double G = 6.6470831e-11;
-		vec3D acc(0,0,0);
-		vec3D newvel(0,0,0);
 		for (unsigned int i = start; i < end; i++)
 		{
-			vec3D sumj(0,0,0);
-			vec3D posi = Ps[i].getPos();
+			vec3D sum(0,0,0);
 			for (unsigned int j = start; j < end; ++j)
 			{
 				if(j != i)
 				{
-					double mj    = Ps[j].getMass();
-					vec3D posj  = Ps[j].getPos();
-					vec3D diff  = posj-posi;
-					vec3D nom   = diff*mj;
+					vec3D diff  = (Ps[j].getPos()-Ps[i].getPos());
 					double mag   = diff.magnitude();
-					double denom = (mag*mag*mag);
-					sumj += nom/denom;
+					double var1 = (Ps[j].getMass())/(mag*mag*mag);
+					sum += diff * var1;
 				}
 			}
-			acc = sumj*G;
-			newvel = Ps[i].getVel() + acc;
-			Ps[i].setVel(newvel);
+			Ps[i].setVel(Ps[i].getVel() + sum*G);
 		}
 	}
 
@@ -207,21 +200,14 @@ public:
 		{
 			if (Ps[i].inNode(root)) tree.addParticle(Ps[i]);
 		}
+		// UNCOMMENT TO SHOW OCTANTS
 		//tree.traverse(&tree);
-		
-		//Now, use the methods in BHTree to update the velocities,
-		//traveling recursively through the tree
+
+		//Update the velocities traveling recursively through the tree
 		for (unsigned int i = start; i < end; i++)
 		{
-			// Ps[i].resetForce(); // not necessary if we calc new velocity
-			// if (Ps[i].inNode(root))
-			// {
-				// cout << "Particle i: " << i << endl;
-				tree.updateVelocity(Ps[i]); // HAS TO BE SOMETHING LIKE CALCULATE NEW VELOCITY!
-				// cout << " vel: " << Ps[i].getVel() << endl;
-				// //Calculate the new positions on a time step
-				Ps[i].update(boundary);
-			// }
+			tree.updateVelocity(Ps[i]);
+			//Ps[i].update(boundary);
 		}
 	}
 	

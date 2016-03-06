@@ -40,7 +40,7 @@
 // this constructor uses a file to load the particles
 //simulation nbody("128.tab"); 
 // this constructor creates random particles
-simulation nbody(1024);
+simulation nbody(8192);
 
 
 // global variables for the visualisation 
