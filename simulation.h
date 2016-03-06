@@ -2,6 +2,8 @@
 #define __SIMULATION_H
 
 #include "particle.h"
+#include "node.h"
+#include "bhtree.h"
 #include <fstream> 
 
 #include <boost/thread/thread.hpp>
@@ -10,11 +12,17 @@
 class simulation 
 {
 	vec3D boundary;
-	particle * Ps;
+	particle *Ps;
 	int size;
 public:
 	int updatesCounter;
-	simulation (const int n) : size(n), boundary(100,100,100), updatesCounter(0) {Ps = new particle [n]; randParticles();}
+	/* CONSTRUCTOR */
+	simulation (const int n) : size(n), boundary(100,100,100), updatesCounter(0)
+	{
+		Ps = new particle[n];
+		randParticles();
+	}
+
 	// load from file
 	simulation (const char * filename) : boundary(100,100,100), updatesCounter(0)
 	{
@@ -45,7 +53,7 @@ public:
 	void randParticles()
 	{
 		// A REALLY HEAVY PARTICLE IN THE MIDDLE
-		Ps[0].set(vec3D(0,0,0), vec3D(0,0,0),1e1);
+		Ps[0].set(vec3D(0,0,0), vec3D(0,0,0),1e10);
 
 		for (int i = 1; i < size; i++)
 		{
@@ -70,7 +78,7 @@ public:
 			// vy = 0;
 			// vz = 0;
 
-			Ps[i].set(vec3D(x,y,z), vec3D(vx,vy,vz),1e1); 
+			Ps[i].set(vec3D(x,y,z), vec3D(vx,vy,vz),1); 
 		}
 	}
 
@@ -93,29 +101,37 @@ public:
 		glutWireCube(boundary.x*2);
 
 		updatesCounter++;
-		//std::cout << "Updates: "<< updatesCounter <<'\r' << std::flush;
 	}
+
+
+
 
 	void update()
 	{
-		update(0,size);
+		//update(0,size);
+		BarnesHut(0,size);
+		//cout << Ps[5].getVel() << '\r'<< flush;
 	}
+
+
 
 	void update(const unsigned int start, const unsigned int end)
 	{
 		for (unsigned int i = start; i < end; i++)
 		{
-	
-#ifdef BOUNDARIES
+			#ifdef BOUNDARIES
 			// boundary update makes them recurse back - like asteroids	
 			Ps[i].update(boundary);
-#else 
+			#else 
 			// proper update
 			Ps[i].update();
-#endif 
+			#endif 
 		}
-		calculateForce(start, end); 
+		calculateForce(start, end);
+		// BarnesHut(start, end);
 	}
+
+
 
 	// this code updates the particles using multi threading 
 	void MTupdate()
@@ -159,7 +175,6 @@ public:
 		for (unsigned int i = start+1; i < end; i++)
 		{
 			vec3D sumj(0,0,0);
-			double mi = Ps[i].getMass();
 			vec3D posi = Ps[i].getPos();
 			for (unsigned int j = start; j < end; ++j)
 			{
@@ -180,10 +195,35 @@ public:
 		}
 	}
 
-	void updatesPerSecond()
-	{
 
-	}
+
+	void BarnesHut(const unsigned int start, const unsigned int end)
+	{
+		double newlength = boundary.x*2;
+		Node root = Node(vec3D(0),newlength);
+    	BHTree tree = BHTree(root);
+
+        // Add bodies to the tree
+        for (unsigned int i = start; i < end; i++)
+        {
+            if (Ps[i].inNode(root)) tree.addParticle(Ps[i]);
+        }
+        tree.traverse(&tree);
+        
+        //Now, use the methods in BHTree to update the velocities,
+        //traveling recursively through the tree
+        for (unsigned int i = start+1; i < end; i++)
+        {
+            // Ps[i].resetForce(); // not necessary if we calc new velocity
+            if (Ps[i].inNode(root))
+            {
+              tree.updateVelocity(Ps[i]); // HAS TO BE SOMETHING LIKE CALCULATE NEW VELOCITY!
+
+              // //Calculate the new positions on a time step
+              Ps[i].update(boundary);
+            }
+        }
+ 	}
 	
 };
 

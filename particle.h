@@ -2,6 +2,7 @@
 #define __PARTICLE_H
 
 #include "vec3d.h"
+#include "node.h"
 
 class simulation; 
 
@@ -37,25 +38,71 @@ public:
 		if (pos.z < -max.z) pos.z = max.z;
 	}
 
+	/* SETTER */
 	void set(const vec3D & npos, const vec3D & nvel, const double nm) {pos = npos; vel = nvel; mass = nm;}
-
 	void setVel(const vec3D &nvel) {vel = nvel;}
 
-	// GETTER FUNCTIONS
-	vec3D getPos()
+	/* GETTER */
+	vec3D getPos() {return pos;}
+	vec3D getVel() {return vel;}
+	double getMass() {return mass;}
+
+	// function that returns true if particle is in a given Node/Octant
+	bool inNode(Node octant) {return octant.containsParticle(pos);}
+
+	
+
+	bool empty()
 	{
-		return pos;
+		if (mass==0.0 && pos==vec3D(0) && vel==vec3D(0))
+		{
+			return true;
+		}
+		return false;
 	}
 
-	vec3D getVel()
+
+    friend bool operator == (const particle &p1, const particle &p2)
+    {
+    	if (p1.mass == p2.mass && p1.pos == p2.pos && p1.vel == p2.vel)
+    	{
+    		return true;
+    	}
+    	return false;
+    }
+
+
+	// function to combine two particles -> calculate new center of mass and total mass
+	particle combine(particle &a, particle &b)
 	{
-		return vel;
+		double totalmass, nx, ny, nz;
+		particle c;
+		totalmass = b.mass + a.mass;
+		nx  = (a.pos.x*a.mass + b.pos.x*b.mass)/totalmass;
+		ny  = (a.pos.y*a.mass + b.pos.y*b.mass)/totalmass;
+		nz  = (a.pos.z*a.mass + b.pos.z*b.mass)/totalmass;
+
+		c.mass = totalmass;
+		c.pos.x = nx;
+		c.pos.y = ny;
+		c.pos.z = nz;
+
+		return c;
 	}
 
-	double getMass()
+
+	void calcNewVelocity(particle &a)
 	{
-		return mass;
+		const double G = 6.6470831e-11;
+		vec3D acc(0,0,0);
+		vec3D diff  = pos - a.pos;
+		vec3D nom   = diff*a.mass;
+		double mag   = diff.magnitude();
+		double denom = (mag*mag*mag);
+		acc = (nom/denom)*G;
+		vel += acc;
 	}
+
 
 	friend istream& operator>>(istream& iStr, particle & p)
 	{

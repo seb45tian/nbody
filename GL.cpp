@@ -40,7 +40,7 @@
 // this constructor uses a file to load the particles
 //simulation nbody("128.tab"); 
 // this constructor creates random particles
-simulation nbody(64);
+simulation nbody(10);
 
 
 // global variables for the visualisation 
@@ -87,7 +87,7 @@ void draw()
 		nbody.MTupdate();
 #else
 		// update simulation - uniprocessor version 
-		nbody.update();
+		// nbody.update();
 #endif
 
 	// re-initialise 3D - in case perspective is changed
@@ -99,12 +99,16 @@ void draw()
 	glColor3f(1.0f, 0.0f, 0.0f); 
 	glLoadIdentity(); 
 
+	
+
 	// update camera coordinates
 	glTranslatef(0.0f, 0.0f, posz);
 	glRotatef(roty, 0.0f, 1.0f, 0.0f);
 	glRotatef(rotx, 1.0f, 0.0f, 0.0f);
 
-
+	// I PUT THE UPDATE HERE TO TEST DRAWING OCTANTS
+	nbody.update();
+	
 	nbody.draw();
 
 
@@ -123,7 +127,7 @@ void draw()
         nbody.updatesCounter = 0;
     }
     // Output for the console
-	std::cout << "UPS: "<< ups <<'\r' << std::flush;
+	//std::cout << "UPS: "<< ups <<'\r' << std::flush;
 	// Output for the display window
 	std::string out = "Updates per second: " + std::to_string(ups);
 	output(0,100, 0,198,247, GLUT_BITMAP_HELVETICA_18, out);

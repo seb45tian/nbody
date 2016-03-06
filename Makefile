@@ -7,7 +7,7 @@ EXECUTABLE=nbody
 
 all: $(SOURCES) $(EXECUTABLE)
 
-$(EXECUTABLE): $(OBJECTS) simulation.h particle.h vec3d.h 
+$(EXECUTABLE): $(OBJECTS) simulation.h particle.h vec3d.h bhtree.h 
 	$(CC) $(LDFLAGS) $(OBJECTS) -o $@
 
 .cpp.o:

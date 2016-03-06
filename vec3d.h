@@ -34,6 +34,15 @@ public:
 		vec3D(const double all) {set(all, all, all);}
 		
 		double magnitude() const {return sqrt(magnitudeSquared());};
+
+		double inftynorm() const
+		{
+			double max = fabs(x);
+			if (fabs(y) > max) {max = fabs(y);}
+			if (fabs(z) > max) {max = fabs(z);}
+			return max;
+		}
+
         /* overloaded operators */
         // functions can be implemented within the class
         // as with the overloaded operator []
@@ -43,6 +52,16 @@ public:
         void operator = (const vec3D & v);
         void operator += (const vec3D & v);
 		
+
+        friend bool operator == (const vec3D &v1, const vec3D &v2)
+        {
+        	for (int i = 0; i < 3; ++i)
+        	{
+        		if (v1[i] != v2[i]) {return false;}
+        	}
+        	return true;
+        }
+
 		void operator *= (double d)
 		{
 			x *= d;
@@ -115,6 +134,7 @@ public:
 		friend class particle; 
 		friend class simulation;
 		friend class Node; 
+		friend class BHTree;
 };
 
 void vec3D::operator=(const vec3D & nV)
@@ -141,8 +161,8 @@ vec3D operator+(const vec3D & v1, const vec3D & v2)
 ostream& operator<<(ostream& oStr, const vec3D & v)
 {
 	for (unsigned int i = 0; i < 3; i++)
-		oStr << v[i] << '\t';
-	oStr << endl; 
+		oStr << v[i] << ' ';
+	//oStr << endl; 
     return oStr;
 }
 

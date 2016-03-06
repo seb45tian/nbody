@@ -2,29 +2,40 @@
 #include <math.h>
 #include "vec3d.h"
 #include "node.h"
+#include "bhtree.h"
+#include "particle.h"
 
 using namespace std;
 
 int main(int argc, char const *argv[])
 {
-	vec3D a(2);
-	double tm = 1;
+	const int size = 3;
+	particle Ps[size];
 
-	const Node *A = new Node(a, tm);
-	const Node *B = new Node(a, tm);
-	const Node *C = new Node(a, tm);
-	const Node *D = new Node(a, tm);
-	const Node *E = new Node(a, tm);
-	const Node *F = new Node(a, tm);
-	const Node *G = new Node(a, tm);
-	const Node *H = new Node(a, tm);
+	Ps[0].set(vec3D(0,1,1), vec3D(0,0,0), 1);
+	Ps[1].set(vec3D(0,-1,-1), vec3D(0,0,0), 1);
+	Ps[2].set(vec3D(1,1,1), vec3D(0,0,0), 1);
 
-	const Node *N = new Node(A,B,C,D,E,F,G,H);
 
-	cout << N->get_totalMass() << endl;
-	cout << N->get_com() << endl;
 
-	N->traverse();
+
+	Node root = Node(vec3D(0),20);
+	BHTree *tree = new BHTree(root);
+
+
+	for (int i = 0; i < size; ++i)
+	{
+		cout << "Particle id: " << i << endl;
+		if (Ps[i].inNode(root)) {tree->addParticle(Ps[i]);}
+		
+	}
+
+	cout << "#############################" << endl;
+	cout << "####### Traverse Tree #######" << endl;
+	cout << "#############################" << endl;
+	tree->traverse(tree);
+
+
 
 	return 0;
 }
