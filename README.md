@@ -11,7 +11,7 @@ A number of random particles can be specified or  a file to read the particle da
 You can choose between a brute-force approach (standard) or using the [Barnes-Hut method](https://en.wikipedia.org/wiki/Barnes–Hut_simulation "Barnes-Hut").
 
 
-Use make to compile code.
+Use make to compile the code. Needs boost and GLUT libraries.
 
 
 ```
