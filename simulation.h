@@ -223,13 +223,14 @@ public:
 				{
 					vec3D diff  = (Ps[j].getPos()-Ps[i].getPos());
 					double mag   = diff.magnitude();
+					double var1;
 					if (eps > 0.0)
 					{
-						double var1 = (Ps[j].getMass())/pow((mag*mag + eps*eps), 1.5)
+						var1 = (Ps[j].getMass())/pow((mag*mag + eps*eps), 1.5);
 					}
 					else
 					{
-						double var1 = (Ps[j].getMass())/(mag*mag*mag);
+						var1 = (Ps[j].getMass())/(mag*mag*mag);
 					}
 					sum += diff * var1;
 				}
