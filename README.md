@@ -12,4 +12,3 @@ Allowed options:
   -b [ --boundary ] arg (=1)    set periodic boundary conditions
   -o [ --octants ] arg (=0)     make octants visible
   -n [ --threads ] arg (=1)     specify number of threads
-
