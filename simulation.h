@@ -44,7 +44,7 @@ public:
 	}
 
 	// constructor to load particle mass, coords and velocities from a file
-	simulation (const char * filename, const int n, const bool npbc, const bool oct, const bool bh, 
+	simulation (const std::string filename, const int n, const bool npbc, const bool oct, const bool bh, 
 				const double t, const double e)
 	{
 		set(n, npbc, oct, bh, t, e);
@@ -54,30 +54,44 @@ public:
 		int count = 0;
 		// fixed for now - will have to correct later
 		double m,x,y,z,vx,vy,vz;
-		fin.open(filename, ios::in); 
 
-		Ps = new particle[size];
-		while (fin >> m >> x >> y >> z >> vx >> vy >> vz )
+
+		fin.open(filename, ios::in); 
+		// First read in file and count lines for correct array size
+		if (fin.good())
 		{
-			particle newp;
-			newp.set(vec3D(x,y,z),vec3D(vx,vy,vz),m);
-			Ps[count] = newp;
-			count++;
+			while(fin >> m >> x >> y >> z >> vx >> vy >> vz )
+			{
+				count++;
+			}
 		}
-		// fin >> size;
-		// cout << size << endl;
-		// // Ps = new particle [size]; 
-		
-		// if (fin.good()) {
-		// 	while (!fin.eof())
-		// 	{
-		// 		cout << count << '\r' << flush; 
-		// 		// fin >> Ps[count];
-		// 		//cout << Ps[count];
-		// 		count++; 
-		// 	}
-		// } else 
-		// 	cout << "Error opening file: " << filename <<  endl;
+		else { cout << "Error opening file: " << filename <<  endl; }
+		fin.close();
+
+
+		// set size to counted lines/particles
+		size = count;
+		// create particle array
+		Ps = new particle[size];
+		cout << "... found " << size << " particles.\n";
+		// reset count
+		count = 0;
+
+
+
+		fin.open(filename, ios::in);
+		if (fin.good())
+		{
+			// read in file a 2nd time and assign particles to array
+			while (fin >> m >> x >> y >> z >> vx >> vy >> vz )
+			{
+				particle newp;
+				newp.set(vec3D(x,y,z),vec3D(vx,vy,vz),m);
+				Ps[count] = newp;
+				count++;
+			}
+		}
+		else { cout << "Error opening file: " << filename <<  endl; }
 		fin.close(); 
 	}
 

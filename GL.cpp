@@ -76,7 +76,7 @@ void cli_parser(int ac, char **av)
 		desc.add_options()
 			("help,h", "produce help message")
 			("particles,p", po::value<int>(&size)->default_value(100), "set number of particles")
-			("infile,f",  po::value<std::string>(&infile), "specify input file (if used, must! set number of particles)")
+			("infile,f",  po::value<std::string>(&infile), "specify input file")
 			("epsilon,e", po::value<double>(&eps)->default_value(3.0e4), "set softening factor")
 			("theta,t", po::value<double>(&theta)->default_value(1.0), "set number of particles")
 			("Barneshut,B",  po::value<bool>(&barneshut)->default_value(0), "use Barnes-Hut method")
@@ -95,10 +95,13 @@ void cli_parser(int ac, char **av)
 		}
 
 		if (vm.count("infile")) {
-			cout << "Reading from " << vm["infile"].as<std::string>() << ".\n";
+			cout << "Reading from " << vm["infile"].as<std::string>() << " ...\n";
+			nbody = simulation(infile,size, boundary, show_octants, barneshut, theta, eps);
 		}
-		if (vm.count("particles")) {
+		else if (vm.count("particles")) {
 			cout << "Number of particles: " << vm["particles"].as<int>() << endl;
+			// Initialise simulation object nbody
+			nbody = simulation(size, boundary, show_octants, barneshut, theta, eps);
 		}
 		if (vm.count("epsilon")) {
 			cout << "Epsilon: " << vm["epsilon"].as<double>() << endl;
@@ -127,8 +130,7 @@ void cli_parser(int ac, char **av)
 		cerr << "Exception of unknown type!\n";
 	}
 
-	// Initialise simulation object nbody
-	nbody = simulation(size, boundary, show_octants, barneshut, theta, eps);
+
 	// exit(0);
 }
 
