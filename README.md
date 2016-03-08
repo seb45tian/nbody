@@ -1,4 +1,18 @@
-# Nbody simulation program
+# N-body simulation program
+
+This program simulates the behaviour of a system of n particles/bodies following
+[Newton's law of universal gravitation](https://en.wikipedia.org/wiki/Newton%27s_law_of_universal_gravitation "Newton").
+The basic principles can be found [here](https://en.wikipedia.org/wiki/N-body_problem "N-body").
+
+A number of random particles can be specified or  a file to read the particle data from. The format of the file has to be:
+```
+[mass] [x] [y] [z] [vx] [vy] [vz]
+```
+You can choose between a brute-force approach (standard) or using the [Barnes-Hut method](https://en.wikipedia.org/wiki/Barnes–Hut_simulation "Barnes-Hut").
+
+
+Use make to compile code.
+
 
 ```
 ./nbody -h
