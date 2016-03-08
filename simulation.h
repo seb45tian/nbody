@@ -9,48 +9,79 @@
 #include <boost/thread/thread.hpp>
 #include <boost/bind.hpp>
 
-#define G 6.6470831e-11
+
 
 class simulation 
 {
+private:
 	vec3D boundary;
 	particle *Ps;
 	int size;
-public:
-	int updatesCounter;
-	/* CONSTRUCTOR */
-	simulation (const int n) : size(n), boundary(100,100,100), updatesCounter(0)
+	bool pbc, show_octants, barneshut;
+	double theta, eps;
+
+	void set(const int n, const bool npbc, const bool oct, const bool bh, const double t, const double e)
 	{
-		Ps = new particle[n];
-		randParticles();
+		size = n;
+		boundary = vec3D(100,100,100);
+		updatesCounter = 0;
+		pbc = npbc;
+		show_octants = oct;
+		barneshut = bh;
+		theta = t;
+		eps = e;
 	}
 
-	// load from file
-	simulation (const char * filename) : boundary(100,100,100), updatesCounter(0)
+public:
+	int updatesCounter;
+	/* CONSTRUCTORS */
+	simulation() {}
+	simulation (const int n, const bool npbc, const bool oct, const bool bh, const double t, const double e)
 	{
+		set(n, npbc, oct, bh, t, e);
+		Ps = new particle[n];
+		randParticles();	
+	}
+
+	// constructor to load particle mass, coords and velocities from a file
+	simulation (const char * filename, const int n, const bool npbc, const bool oct, const bool bh, 
+				const double t, const double e)
+	{
+		set(n, npbc, oct, bh, t, e);
+
 		// n-body data from http://bima.astro.umd.edu/nemo/archive/#dubinski
 		ifstream fin;
 		int count = 0;
 		// fixed for now - will have to correct later
+		double m,x,y,z,vx,vy,vz;
 		fin.open(filename, ios::in); 
-	//	size = 1024;
-		fin >> size; 
-		Ps = new particle [size]; 
+
+		Ps = new particle[size];
+		while (fin >> m >> x >> y >> z >> vx >> vy >> vz )
+		{
+			particle newp;
+			newp.set(vec3D(x,y,z),vec3D(vx,vy,vz),m);
+			Ps[count] = newp;
+			count++;
+		}
+		// fin >> size;
+		// cout << size << endl;
+		// // Ps = new particle [size]; 
 		
-		if (fin.good()) {
-			while (!fin.eof())
-			{
-				cout << count << '\r'; 
-				fin >> Ps[count];
-				//cout << Ps[count];
-				count++; 
-			}
-		} else 
-			cout << "Error opening file: " << filename <<  endl;
+		// if (fin.good()) {
+		// 	while (!fin.eof())
+		// 	{
+		// 		cout << count << '\r' << flush; 
+		// 		// fin >> Ps[count];
+		// 		//cout << Ps[count];
+		// 		count++; 
+		// 	}
+		// } else 
+		// 	cout << "Error opening file: " << filename <<  endl;
 		fin.close(); 
-		
 	}
 
+	/*========================================================================*/
 
 	void randParticles()
 	{
@@ -102,6 +133,7 @@ public:
 		glColor3f(1.0f, 1.0f, 1.0f); 
 		glutWireCube(boundary.x*2);
 
+		// Increment the updates counter
 		updatesCounter++;
 	}
 
@@ -110,8 +142,7 @@ public:
 
 	void update()
 	{
-	    update(0,size);
-		//BarnesHut(0,size);
+		update(0,size);
 	}
 
 
@@ -120,56 +151,53 @@ public:
 	{
 		for (unsigned int i = start; i < end; i++)
 		{
-			#ifdef BOUNDARIES
-			// boundary update makes them recurse back - like asteroids	
-			Ps[i].update(boundary);
-			#else 
-			// proper update
-			Ps[i].update();
-			#endif 
+			if(pbc) { Ps[i].update(boundary); }
+			else { Ps[i].update(); }
 		}
-		//calculateForce(start, end);
-		BarnesHut(start, end);
+
+		if (barneshut) { BarnesHut(start, end); }
+		else { calculateForce(start, end); }
 	}
 
 
 
 	// this code updates the particles using multi threading 
-	void MTupdate()
+	void MTupdate(const int proc_num)
 	{
 		// NOTE: this is not the most efficient way of handling threads  
 		// the most efficient way of doing this is to 
 		// create the threads once and use barriers
-		boost::thread * t[PROC_NUM];
+		boost::thread * t[proc_num];
 		
 		// NOTE: this form of load balancing may not be ideal
 		// when the work load is not uniform 
 		// for the simplest of cases it is 
-		unsigned int per_thread = ceilf((float) size/ (float)(PROC_NUM)); 
+		unsigned int per_thread = ceilf((float) size/ (float)(proc_num)); 
 
-		for (int i = 0; i < PROC_NUM; i++)
+		for (int i = 0; i < proc_num; i++)
 		{
 			unsigned int start = i * per_thread;
 			unsigned int end = start + per_thread;
 			end = (end < size) ? end : size;
-			cout <<  i  << " Start = " << start << " End = " << end << endl;
+			// cout <<  i  << " Start = " << start << " End = " << end << endl;
 			// launch all threads
 			t[i] = new boost::thread(boost::bind(&simulation::update, this, start, end));
 		}
 		
 		// barrier wait on all threads
-		for (int i = 0; i < PROC_NUM; i++)
+		for (int i = 0; i < proc_num; i++)
 			t[i]->join();
 
 		// remove thread
 		// as mentioned above, we would ideally keep using the same threads
-		for (int i = 0; i < PROC_NUM; i++)
+		for (int i = 0; i < proc_num; i++)
 			delete t[i]; 
 	}
 
+
+	/* BRUTE FORCE METHOD TO CALCULATE THE NEW VELOCITIES (FORCES) */	
 	void calculateForce(const unsigned int start, const unsigned int end)
 	{
-		// calcuate forces here
 		for (unsigned int i = start; i < end; i++)
 		{
 			vec3D sum(0,0,0);
@@ -188,26 +216,29 @@ public:
 	}
 
 
-
+	/* BARNES-HUT METHOD TO CALCULATE THE NEW VELOCITES (FORCES) */
 	void BarnesHut(const unsigned int start, const unsigned int end)
 	{
+		// Note: this work only for a cubic box at the moment where every side length is the same
 		double newlength = boundary.x*2;
+		// Create a root node
 		Node root = Node(vec3D(0),newlength);
+		// Creat the Barnes-Hut tree
 		BHTree tree = BHTree(root);
 
-		// Add bodies to the tree
+		// Add all bodies to the tree
 		for (unsigned int i = start; i < end; i++)
 		{
-			if (Ps[i].inNode(root)) tree.addParticle(Ps[i]);
+			if (Ps[i].inNode(root)) { tree.addParticle(Ps[i]); }
 		}
-		// UNCOMMENT TO SHOW OCTANTS
-		//tree.traverse(&tree);
+
+		// Show octants if set
+		if (show_octants) { tree.traverse(&tree); }
 
 		//Update the velocities traveling recursively through the tree
 		for (unsigned int i = start; i < end; i++)
 		{
-			tree.updateVelocity(Ps[i]);
-			//Ps[i].update(boundary);
+			tree.updateVelocity(Ps[i], theta);
 		}
 	}
 	

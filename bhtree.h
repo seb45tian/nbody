@@ -53,11 +53,18 @@ public:
 	}
 
 
+	/* FUNCTION TO RETURN A PARTICLE */
+	particle getParticle()
+	{
+		return p;
+	}
 
 
-	// THIS IS THE RECURSIVE FUNCTION TO ADD PARTICLES TO THE TREE!
+
+	/* THIS IS THE RECURSIVE FUNCTION TO ADD PARTICLES TO THE TREE! */
 	void addParticle(particle np)
 	{
+		// If there is no particle in the current tree, add it and we are done
 		if (p.empty()==true)
 		{
 			p = np;
@@ -65,7 +72,7 @@ public:
 		}
 		//If there already is a particle, but it's not an external node
     	//combine the two particles and figure out which octant of the 
-    	//tree it should be located in. Then recursively update the nodes below it.
+    	//tree it should be located in. Then recursively update the nodes.
 		else if (this->isExternal(*this) == false)
 		{
 			p = np.combine(p,np);
@@ -137,7 +144,7 @@ public:
 				}
 			}
 		}
-		//If the node is external and contains another particle, create BHTrees
+		//If the node is external and contains another particle, create new nodes (BHTrees)
 		//where the bodies should go, update the node, and end (do not do anything recursively)
 		else if (this->isExternal(*this) == true)
 		{
@@ -216,60 +223,44 @@ public:
 
 
 
-
-
-
-
-
-
-
-
-	//Start at the main node of the tree. Then, recursively go to each branch
-	//until either we reach an external node or we reach a node that is sufficiently
-	//far away that the external nodes would not matter much.
-	void updateVelocity(particle &np)
+	/* FUNCTION TO UPDATE THE VELOCITIES OF THE PARTICLES RECURSIVELY */
+	void updateVelocity(particle &np, const double theta)
 	{
-		double theta = 2;
+		// calculate the distance between the two particles
 		vec3D diff = p.getPos() - np.getPos();
 		double distance = diff.magnitude();
 
+		// if the node is external, add the velocity
 		if (this->isExternal(*this) == true)
 		{
-			// cout << "External Node" << endl;
 			if (!(p==np))
 			{
-				// cout << "Old: " << np.getVel() << endl;
 				np.addVelocity(p);
-				// cout << "New: " << np.getVel() << endl;
 				return;
 			}
-			// else cout << "np == p" << endl;
 		}
+		// if the node is sufficiently far away (theta criteria), also add the velocity
 		else if (octant.get_length()/(distance)< theta)
 		{
-			// cout << "l/r < theta" << endl;
 			np.addVelocity(p);
 		}
+		// else traverse through the childe nodes and update the velocities
 		else
 		{
-			if (this->SWU!=NULL) {this->SWU->updateVelocity(np);}
-			if (this->NWU!=NULL) {this->NWU->updateVelocity(np);}
-			if (this->SEU!=NULL) {this->SEU->updateVelocity(np);}
-			if (this->NEU!=NULL) {this->NEU->updateVelocity(np);}
-			if (this->SWD!=NULL) {this->SWD->updateVelocity(np);}
-			if (this->NWD!=NULL) {this->NWD->updateVelocity(np);}
-			if (this->SED!=NULL) {this->SED->updateVelocity(np);}
-			if (this->NED!=NULL) {this->NED->updateVelocity(np);}
+			if (this->SWU!=NULL) {this->SWU->updateVelocity(np, theta);}
+			if (this->NWU!=NULL) {this->NWU->updateVelocity(np, theta);}
+			if (this->SEU!=NULL) {this->SEU->updateVelocity(np, theta);}
+			if (this->NEU!=NULL) {this->NEU->updateVelocity(np, theta);}
+			if (this->SWD!=NULL) {this->SWD->updateVelocity(np, theta);}
+			if (this->NWD!=NULL) {this->NWD->updateVelocity(np, theta);}
+			if (this->SED!=NULL) {this->SED->updateVelocity(np, theta);}
+			if (this->NED!=NULL) {this->NED->updateVelocity(np, theta);}
 		}
 	}
 
 
-	particle getParticle()
-	{
-		return p;
-	}
 
-
+	/*THIS FUNCTION TRAVERSES THE TREE AND DRAWS EVERY OCTANT IT FINDS */
 	void traverse(BHTree *tree)
 	{
 		if (tree->p.empty()==false)
@@ -281,7 +272,6 @@ public:
 			glTranslatef(trans.x,trans.y,trans.z);	// need to translate origin
 			glutWireCube(tree->octant.get_length());		// size of cube
 			glPopMatrix();			// ??
-			// return;
 		}
 
 		if (tree->SWU!=NULL) {traverse(tree->SWU);}

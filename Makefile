@@ -1,6 +1,6 @@
-CC=g++  #-std=c++0x
+CC=g++ -std=c++0x
 CFLAGS=-c -Wno-deprecated -O3
-LDFLAGS=-framework GLUT -framework OpenGL -lboost_system
+LDFLAGS=-framework GLUT -framework OpenGL -lboost_system -lboost_thread-mt -lboost_program_options
 SOURCES=GL.cpp
 OBJECTS=$(SOURCES:.cpp=.o)
 EXECUTABLE=nbody

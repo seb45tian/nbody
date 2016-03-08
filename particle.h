@@ -4,6 +4,9 @@
 #include "vec3d.h"
 #include "node.h"
 
+// Gravitational Constant
+#define G 6.6470831e-11
+
 class simulation; 
 
 class particle 
@@ -93,7 +96,6 @@ public:
 
 	void addVelocity(particle &a)
 	{
-		const double G = 6.6470831e-11;
 		vec3D acc(0,0,0);
 		vec3D diff  = a.pos - pos;
 		vec3D nom   = diff*a.mass;
