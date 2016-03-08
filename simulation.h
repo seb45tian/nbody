@@ -192,7 +192,7 @@ public:
 		{
 			unsigned int start = i * per_thread;
 			unsigned int end = start + per_thread;
-			end = (end < size) ? end : size;
+			end = ((int)end < size) ? end : size;
 			// cout <<  i  << " Start = " << start << " End = " << end << endl;
 			// launch all threads
 			t[i] = new boost::thread(boost::bind(&simulation::update, this, start, end));
