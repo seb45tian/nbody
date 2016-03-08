@@ -10,8 +10,6 @@
 #include <boost/thread/thread.hpp>
 #include <boost/bind.hpp>
 
-
-
 class simulation 
 {
 private:
