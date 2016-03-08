@@ -5,6 +5,7 @@
 #include "node.h"
 #include "bhtree.h"
 #include <fstream> 
+#include <cmath>
 
 #include <boost/thread/thread.hpp>
 #include <boost/bind.hpp>
@@ -128,6 +129,7 @@ public:
 			Ps[i].set(vec3D(x,y,z), vec3D(vx,vy,vz),100000000.0f); 
 		}
 	}
+	/*========================================================================*/
 
 	/* draw should be called in between glBegin and glEnd */
 	void draw()
@@ -152,13 +154,13 @@ public:
 	}
 
 
-
+	/*========================================================================*/
 
 	void update()
 	{
 		update(0,size);
 	}
-
+	/*========================================================================*/
 
 
 	void update(const unsigned int start, const unsigned int end)
@@ -173,7 +175,7 @@ public:
 		else { calculateForce(start, end); }
 	}
 
-
+	/*========================================================================*/
 
 	// this code updates the particles using multi threading 
 	void MTupdate(const int proc_num)
@@ -208,7 +210,7 @@ public:
 			delete t[i]; 
 	}
 
-
+	/*========================================================================*/
 	/* BRUTE FORCE METHOD TO CALCULATE THE NEW VELOCITIES (FORCES) */	
 	void calculateForce(const unsigned int start, const unsigned int end)
 	{
@@ -221,7 +223,14 @@ public:
 				{
 					vec3D diff  = (Ps[j].getPos()-Ps[i].getPos());
 					double mag   = diff.magnitude();
-					double var1 = (Ps[j].getMass())/(mag*mag*mag);
+					if (eps > 0.0)
+					{
+						double var1 = (Ps[j].getMass())/pow((mag*mag + eps*eps), 1.5)
+					}
+					else
+					{
+						double var1 = (Ps[j].getMass())/(mag*mag*mag);
+					}
 					sum += diff * var1;
 				}
 			}
@@ -229,7 +238,7 @@ public:
 		}
 	}
 
-
+	/*========================================================================*/
 	/* BARNES-HUT METHOD TO CALCULATE THE NEW VELOCITES (FORCES) */
 	void BarnesHut(const unsigned int start, const unsigned int end)
 	{
@@ -255,7 +264,7 @@ public:
 			tree.updateVelocity(Ps[i], theta);
 		}
 	}
-	
+	/*========================================================================*/
 };
 
 
