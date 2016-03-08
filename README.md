@@ -1,6 +1,6 @@
 # Nbody simulation program
 
-```bash
+```
 ./nbody -h
 
 Allowed options:
