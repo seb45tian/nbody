@@ -262,7 +262,7 @@ public:
 		//Update the velocities traveling recursively through the tree
 		for (unsigned int i = start; i < end; i++)
 		{
-			tree.updateVelocity(Ps[i], theta);
+			tree.updateVelocity(Ps[i], theta, eps);
 		}
 	}
 	/*========================================================================*/

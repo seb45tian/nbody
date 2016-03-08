@@ -94,13 +94,21 @@ public:
 	}
 
 
-	void addVelocity(particle &a)
+	void addVelocity(particle &a, const double eps)
 	{
 		vec3D acc(0,0,0);
 		vec3D diff  = a.pos - pos;
 		vec3D nom   = diff*a.mass;
 		double dist = diff.magnitude();
-		double denom =  (dist*dist*dist);
+
+		double denom;
+		if (eps > 0.0) {
+			denom = pow((dist*dist + eps*eps), 1.5);
+		}
+		else { 
+			denom =  (dist*dist*dist);
+		}
+		
 		acc = (nom/denom)*G;
 		vel = vel + acc;
 	}

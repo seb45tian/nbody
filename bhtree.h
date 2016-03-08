@@ -224,7 +224,7 @@ public:
 
 
 	/* FUNCTION TO UPDATE THE VELOCITIES OF THE PARTICLES RECURSIVELY */
-	void updateVelocity(particle &np, const double theta)
+	void updateVelocity(particle &np, const double theta, const double eps)
 	{
 		// calculate the distance between the two particles
 		vec3D diff = p.getPos() - np.getPos();
@@ -235,26 +235,26 @@ public:
 		{
 			if (!(p==np))
 			{
-				np.addVelocity(p);
+				np.addVelocity(p, eps);
 				return;
 			}
 		}
 		// if the node is sufficiently far away (theta criteria), also add the velocity
 		else if (octant.get_length()/(distance)< theta)
 		{
-			np.addVelocity(p);
+			np.addVelocity(p, eps);
 		}
 		// else traverse through the childe nodes and update the velocities
 		else
 		{
-			if (this->SWU!=NULL) {this->SWU->updateVelocity(np, theta);}
-			if (this->NWU!=NULL) {this->NWU->updateVelocity(np, theta);}
-			if (this->SEU!=NULL) {this->SEU->updateVelocity(np, theta);}
-			if (this->NEU!=NULL) {this->NEU->updateVelocity(np, theta);}
-			if (this->SWD!=NULL) {this->SWD->updateVelocity(np, theta);}
-			if (this->NWD!=NULL) {this->NWD->updateVelocity(np, theta);}
-			if (this->SED!=NULL) {this->SED->updateVelocity(np, theta);}
-			if (this->NED!=NULL) {this->NED->updateVelocity(np, theta);}
+			if (this->SWU!=NULL) {this->SWU->updateVelocity(np, theta, eps);}
+			if (this->NWU!=NULL) {this->NWU->updateVelocity(np, theta, eps);}
+			if (this->SEU!=NULL) {this->SEU->updateVelocity(np, theta, eps);}
+			if (this->NEU!=NULL) {this->NEU->updateVelocity(np, theta, eps);}
+			if (this->SWD!=NULL) {this->SWD->updateVelocity(np, theta, eps);}
+			if (this->NWD!=NULL) {this->NWD->updateVelocity(np, theta, eps);}
+			if (this->SED!=NULL) {this->SED->updateVelocity(np, theta, eps);}
+			if (this->NED!=NULL) {this->NED->updateVelocity(np, theta, eps);}
 		}
 	}
 
