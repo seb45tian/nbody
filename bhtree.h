@@ -267,7 +267,7 @@ public:
 		{
 			// SOME AWESOME DRAWING FUN OF OCTANTS!!!
 			vec3D trans = tree->octant.get_mid();
-			glColor3f(1, 0, 0);   	//color of object
+			glColor3f(1, 0, 0);   	//color of object = red
 			glPushMatrix();		  	// ??
 			glTranslatef(trans.x,trans.y,trans.z);	// need to translate origin
 			glutWireCube(tree->octant.get_length());		// size of cube

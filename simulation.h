@@ -136,7 +136,7 @@ public:
 		// first one is red - just to be able to follow one
 		glVertex3dv(Ps[0].pos.v);
 		// rest are green
-		glColor3f(0.0f,1.0f, 0.0f);
+		glColor3f(0.0f, 1.0f, 0.0f);
 		for (int i = 1; i < size; i++)
 		{
 			// draw all the particles 
@@ -245,7 +245,7 @@ public:
 		double newlength = boundary.x*2;
 		// Create a root node
 		Node root = Node(vec3D(0),newlength);
-		// Creat the Barnes-Hut tree
+		// Create the Barnes-Hut tree
 		BHTree tree = BHTree(root);
 
 		// Add all bodies to the tree

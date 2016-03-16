@@ -1,5 +1,5 @@
 CC=g++
-CFLAGS=-c --std=c++0x -Wno-deprecated -O3 -Wall
+CFLAGS=-c --std=c++0x -O3 -Wno-deprecated -Wall
 
 UNAME := $(shell uname)
 ifeq ($(UNAME), Linux)

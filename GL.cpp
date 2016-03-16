@@ -45,15 +45,13 @@
 /* global variables for the simulation */
 int size,proc_num;
 double theta, eps;
-bool boundary,barneshut,show_octants;
+bool boundary, barneshut, show_octants;
 std::string infile;
 
 // create an empty simulation object
 simulation nbody;
 
 /*========================================================================*/
-
-
 
 // global variables for the visualisation 
 float roty = 0.0f;
@@ -78,10 +76,10 @@ void cli_parser(int ac, char **av)
 			("particles,p", po::value<int>(&size)->default_value(100), "set number of particles")
 			("infile,f",  po::value<std::string>(&infile), "specify input file")
 			("epsilon,e", po::value<double>(&eps)->default_value(0.0), "set softening factor")
-			("theta,t", po::value<double>(&theta)->default_value(1.0), "set number of particles")
-			("Barneshut,B",  po::value<bool>(&barneshut)->default_value(0), "use Barnes-Hut method")
-			("boundary,b",  po::value<bool>(&boundary)->default_value(true), "set periodic boundary conditions")
-			("octants,o",  po::value<bool>(&show_octants)->default_value(false), "make octants visible")
+			("theta,t", po::value<double>(&theta)->default_value(1.0), "set threshold value for theta")
+			("Barneshut,B",  po::value<bool>(&barneshut)->implicit_value(true), "use Barnes-Hut method")
+			("boundary,b",  po::value<bool>(&boundary)->implicit_value(true), "use periodic boundary conditions")
+			("octants,o",  po::value<bool>(&show_octants)->implicit_value(true), "make octants visible")
 			("threads,n",  po::value<int>(&proc_num)->default_value(1), "specify number of threads")
 		;
 
@@ -94,6 +92,7 @@ void cli_parser(int ac, char **av)
 			exit(0);
 		}
 
+		// Read from file or create random particles
 		if (vm.count("infile")) {
 			cout << "Reading from " << vm["infile"].as<std::string>() << " ...\n";
 			nbody = simulation(infile,size, boundary, show_octants, barneshut, theta, eps);
@@ -103,20 +102,26 @@ void cli_parser(int ac, char **av)
 			// Initialise simulation object nbody
 			nbody = simulation(size, boundary, show_octants, barneshut, theta, eps);
 		}
-		if (vm.count("epsilon")) {
+
+
+		if (vm.count("epsilon") &&  vm["epsilon"].as<double>() > 0.0 ){
 			cout << "Epsilon: " << vm["epsilon"].as<double>() << endl;
 		}
-		if (vm.count("theta")) {
+		if (vm.count("theta") && vm.count("Barneshut")) {
 			cout << "Theta: " << vm["theta"].as<double>() << endl;
 		}
-		if (vm.count("Barneshut") && vm["Barneshut"].as<bool>()) {
+		if (vm.count("Barneshut") && barneshut == true) {
 			cout << "Using Barnes-Hut method." << endl;
 		}
-		if (vm.count("boundary") && vm["boundary"].as<bool>()) {
+		if (vm.count("boundary") && boundary == true) {
 			cout << "Using periodic boundary conditions." << endl;
 		}
-		if (vm.count("octants") && vm["octants"].as<bool>()) {
+		if (vm.count("octants") && show_octants == true && barneshut == true) {
 			cout << "Displaying octants." << endl;
+		}
+		else if (show_octants == true && barneshut == false) {
+			cerr << "Error: Can not display octants when not using the Barnes-Hut method!\n";
+			exit(1);
 		}
 		if (vm.count("threads") && vm["threads"].as<int>() > 1) {
 			cout << "Number of threads: " << vm["threads"].as<int>() << endl;
@@ -129,9 +134,6 @@ void cli_parser(int ac, char **av)
 	catch(...) {
 		cerr << "Exception of unknown type!\n";
 	}
-
-
-	// exit(0);
 }
 
 /*========================================================================*/
@@ -170,7 +172,7 @@ void draw()
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 	glEnable(GL_DEPTH_TEST);
 
-	glColor3f(1.0f, 0.0f, 0.0f); 
+    glColor3f(1.0f, 0.0f, 0.0f); 
 	glLoadIdentity(); 
 
 	// update camera coordinates
@@ -210,8 +212,8 @@ void draw()
 	// Output for the console
 	std::cout << "UPS: "<< ups <<'\r' << std::flush;
 	// Output for the display window
-	std::string out = "Updates per second: " + std::to_string(ups);
-	output(0,100, 0,198,247, GLUT_BITMAP_HELVETICA_18, out);
+	//std::string out = "Updates per second: " + std::to_string(ups);
+	//output(0,100, 0,198,247, GLUT_BITMAP_HELVETICA_18, out);
 	/****************************************************/
 
 
@@ -251,7 +253,8 @@ int main(int argc, char **argv)
 	glutDisplayFunc(draw);
 	glutKeyboardFunc(keyboard);
 	glClearDepth(1.0);
-	glClearColor(0.0, 0.0, 0.0, 0.0);
+	glClearColor(0.0, 0.0, 0.0, 0.0); // BLACK BG
+	// glClearColor(1.0, 1.0, 1.0, 0.0); // WHITE BG, USEFULL FOR SCREENSHOTS
 
 	init3D(); 
 	srandom(time(NULL));
