@@ -33,3 +33,4 @@ Usage:
 Author
 ------
 Sebastian Potthoff: <sebastian.potthoff@gmail.com>
+University of Warwick, March 2016
