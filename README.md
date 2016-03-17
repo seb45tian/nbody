@@ -12,7 +12,7 @@ You can choose between a brute-force approach (standard) or using the [Barnes-Hu
 
 Installation:
 ------
-Use the provided Makefile to compile the code. Testes on Linux and Max OSX 10.9.5. 
+Use the provided Makefile to compile the code. Tested on Linux and Max OSX 10.9.5. 
 Boost and GL/GLUT,OpenGL libraries required.
 
 Usage:
