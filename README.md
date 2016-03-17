@@ -10,25 +10,26 @@ A number of random particles can be specified or  a file to read the particle da
 
 You can choose between a brute-force approach (standard) or using the [Barnes-Hut method](https://en.wikipedia.org/wiki/Barnes–Hut_simulation "Barnes-Hut").
 
+Installation:
+------
+Use the provided Makefile to compile the code. Testes on Linux and Max OSX 10.9.5. 
+Boost and GL/GLUT,OpenGL libraries required.
 
-Use make to compile the code. Needs boost and GLUT libraries.
-
-
-```
-./nbody -h
-
-Allowed options:
-  -h [ --help ]                 produce help message
-  -p [ --particles ] arg (=100) set number of particles
-  -f [ --infile ] arg           specify input file
-  -e [ --epsilon ] arg (=0)     set softening factor
-  -t [ --theta ] arg (=1)       set threshold value for theta
-  -B [ --Barneshut ] [=arg(=1)] use Barnes-Hut method
-  -b [ --boundary ] [=arg(=1)]  use periodic boundary conditions
-  -o [ --octants ] [=arg(=1)]   make octants visible
-  -n [ --threads ] arg (=1)     specify number of threads (only for BH. No need
-                                to add -B.)
-```
+Usage:
+------
+    ./nbody -h
+    
+    Allowed options:
+      -h [ --help ]                 produce help message
+      -p [ --particles ] arg (=100) set number of particles
+      -f [ --infile ] arg           specify input file
+      -e [ --epsilon ] arg (=0)     set softening factor
+      -t [ --theta ] arg (=1)       set threshold value for theta
+      -B [ --Barneshut ] [=arg(=1)] use Barnes-Hut method
+      -b [ --boundary ] [=arg(=1)]  use periodic boundary conditions
+      -o [ --octants ] [=arg(=1)]   make octants visible
+      -n [ --threads ] arg (=1)     specify number of threads (only for BH. No need
+                                    to add -B.)
 Author
 ------
 Sebastian Potthoff: <sebastian.potthoff@gmail.com>
