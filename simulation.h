@@ -42,7 +42,7 @@ public:
 		randParticles();	
 	}
 
-	// constructor to load particle mass, coords and velocities from a file
+	// constructor to load particle mass, coords and velocities from a FILE!
 	simulation (const std::string filename, const int n, const bool npbc, const bool oct, const bool bh, 
 				const double t, const double e)
 	{
@@ -53,7 +53,6 @@ public:
 		int count = 0;
 		// fixed for now - will have to correct later
 		double m,x,y,z,vx,vy,vz;
-
 
 		fin.open(filename, ios::in); 
 		// First read in file and count lines for correct array size
@@ -67,7 +66,6 @@ public:
 		else { cout << "Error opening file: " << filename <<  endl; }
 		fin.close();
 
-
 		// set size to counted lines/particles
 		size = count;
 		// create particle array
@@ -75,8 +73,6 @@ public:
 		cout << "... found " << size << " particles.\n";
 		// reset count
 		count = 0;
-
-
 
 		fin.open(filename, ios::in);
 		if (fin.good())
@@ -95,12 +91,9 @@ public:
 	}
 
 	/*========================================================================*/
-
+	/* Function to create random particles */
 	void randParticles()
 	{
-		// A REALLY HEAVY PARTICLE IN THE MIDDLE
-		// Ps[0].set(vec3D(0,0,0), vec3D(0,0,0),1e8);
-
 		for (int i = 0; i < size; i++)
 		{
 			double x, y, z;
@@ -118,11 +111,6 @@ public:
 			vx /= 10000.0f;
 			vy /= 10000.0f;
 			vz /= 10000.0f;
-
-			// UNCOMMENT IF YOU WANT TO START WITH ZERO VELOCITY / MIGHT CAUSE ERROR FOR LARGE N??
-			// vx = 0;
-			// vy = 0;
-			// vz = 0;
 
 			Ps[i].set(vec3D(x,y,z), vec3D(vx,vy,vz),100000000.0f); 
 		}
@@ -169,7 +157,7 @@ public:
 			else { Ps[i].update(); }
 		}
 
-		if (barneshut) { BarnesHut(start, end); }
+		if (barneshut) { BarnesHut2(start, end); }
 		else { calculateForce(start, end); }
 	}
 
@@ -178,6 +166,10 @@ public:
 	// this code updates the particles using multi threading 
 	void MTupdate(const int proc_num)
 	{
+		// We create a tree here and fill it with all the particles (1 proc)
+		BHTree tree;
+		tree = fillTreeBH(0, size);
+
 		// NOTE: this is not the most efficient way of handling threads  
 		// the most efficient way of doing this is to 
 		// create the threads once and use barriers
@@ -188,6 +180,8 @@ public:
 		// for the simplest of cases it is 
 		unsigned int per_thread = ceilf((float) size/ (float)(proc_num)); 
 
+		// Loop over all processes and give everyone its own
+		// start and end particle id
 		for (int i = 0; i < proc_num; i++)
 		{
 			unsigned int start = i * per_thread;
@@ -195,7 +189,8 @@ public:
 			end = ((int)end < size) ? end : size;
 			// cout <<  i  << " Start = " << start << " End = " << end << endl;
 			// launch all threads
-			t[i] = new boost::thread(boost::bind(&simulation::update, this, start, end));
+			// t[i] = new boost::thread(boost::bind(&simulation::update, this, start, end)); //ORIGINAL
+			t[i] = new boost::thread(boost::bind(&simulation::updateVelBH, this, start, end, &tree)); //ADDED
 		}
 		
 		// barrier wait on all threads
@@ -206,6 +201,13 @@ public:
 		// as mentioned above, we would ideally keep using the same threads
 		for (int i = 0; i < proc_num; i++)
 			delete t[i]; 
+
+		// Update the positions
+		for (unsigned int i = 0; i < size; i++)
+		{
+			if(pbc) { Ps[i].update(boundary); }
+			else { Ps[i].update(); }
+		}
 	}
 
 	/*========================================================================*/
@@ -237,9 +239,11 @@ public:
 		}
 	}
 
+
+
 	/*========================================================================*/
-	/* BARNES-HUT METHOD TO CALCULATE THE NEW VELOCITES (FORCES) */
-	void BarnesHut(const unsigned int start, const unsigned int end)
+	/* Function to fill the BH Tree with particles */
+	BHTree fillTreeBH(const unsigned int start, const unsigned int end)
 	{
 		// Note: this work only for a cubic box at the moment where every side length is the same
 		double newlength = boundary.x*2;
@@ -253,15 +257,30 @@ public:
 		{
 			if (Ps[i].inNode(root)) { tree.addParticle(Ps[i]); }
 		}
+		return tree;
+	}
 
-		// Show octants if set
-		if (show_octants) { tree.traverse(&tree); }
-
-		//Update the velocities traveling recursively through the tree
+	/*========================================================================*/
+	/* Function to update the velocities for a given Barnes-Hut tree */
+	void updateVelBH(const unsigned int start, const unsigned int end, BHTree *tree)
+	{
 		for (unsigned int i = start; i < end; i++)
 		{
-			tree.updateVelocity(Ps[i], theta, eps);
+			//Update the velocities traveling recursively through the tree
+			tree->updateVelocity(Ps[i], theta, eps);
 		}
+	}
+
+	/*========================================================================*/
+	/* BARNES-HUT METHOD TO CALCULATE THE NEW VELOCITES (FORCES) */
+	void BarnesHut2(const unsigned int start, const unsigned int end)
+	{
+		// Fill tree and get tree object back
+		BHTree tree = fillTreeBH(start, end);
+		// Show octants if set
+		if (show_octants) { tree.traverse(&tree); }
+		// Update velocities
+		updateVelBH(start, end, &tree);
 	}
 	/*========================================================================*/
 };
