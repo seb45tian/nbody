@@ -65,6 +65,7 @@ int previousTime = 0;
 
 
 /*========================================================================*/
+/* COMMAND LINE PARSER */
 namespace po = boost::program_options;
 void cli_parser(int ac, char **av)
 {
@@ -80,7 +81,7 @@ void cli_parser(int ac, char **av)
 			("Barneshut,B",  po::value<bool>(&barneshut)->implicit_value(true), "use Barnes-Hut method")
 			("boundary,b",  po::value<bool>(&boundary)->implicit_value(true), "use periodic boundary conditions")
 			("octants,o",  po::value<bool>(&show_octants)->implicit_value(true), "make octants visible")
-			("threads,n",  po::value<int>(&proc_num)->default_value(1), "specify number of threads")
+			("threads,n",  po::value<int>(&proc_num)->default_value(1), "specify number of threads (only for BH. No need to add -B.)")
 		;
 
 		po::variables_map vm;        
@@ -125,6 +126,7 @@ void cli_parser(int ac, char **av)
 		}
 		if (vm.count("threads") && vm["threads"].as<int>() > 1) {
 			cout << "Number of threads: " << vm["threads"].as<int>() << endl;
+			cout << "Using Barnes-Hut method." << endl;
 		}
 	}
 	catch(exception& e) {
@@ -212,8 +214,8 @@ void draw()
 	// Output for the console
 	std::cout << "UPS: "<< ups <<'\r' << std::flush;
 	// Output for the display window
-	//std::string out = "Updates per second: " + std::to_string(ups);
-	//output(0,100, 0,198,247, GLUT_BITMAP_HELVETICA_18, out);
+	std::string out = "Updates per second: " + std::to_string(ups);
+	output(0,138, 1.0,1.0,1.0, GLUT_BITMAP_HELVETICA_18, out);
 	/****************************************************/
 
 
